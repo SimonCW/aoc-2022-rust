@@ -38,6 +38,23 @@ pub fn run_p1(input: &str) -> usize {
     }
     num_fully_contained
 }
+
+pub fn run_p2(input: &str) -> usize {
+    let (_, sections) = parse_lines(input).unwrap();
+    let mut num_overlapping = 0;
+    for (section1, section2) in sections {
+        let overlap_bound1_in_2 =
+            section2.contains(section1.start()) || section2.contains(section1.end());
+        let overlap_bound2_in1 =
+            section1.contains(section2.start()) || section1.contains(section2.end());
+        if overlap_bound1_in_2 || overlap_bound2_in1 {
+            num_overlapping += 1
+        } else {
+            continue;
+        }
+    }
+    num_overlapping
+}
 #[cfg(test)]
 mod tests {
     use super::*;
