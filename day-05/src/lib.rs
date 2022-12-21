@@ -26,18 +26,25 @@ fn parse_crates_line(input: &str) -> IResult<&str, Vec<Option<&str>>> {
 
 #[derive(Debug)]
 struct CraneOp {
-    num: u32,
+    qty: u32,
     from: u32,
     to: u32,
 }
 
 fn parse_craneop(input: &str) -> IResult<&str, CraneOp> {
-    let (input, (num, from, to)) = sequence::tuple((
+    let (input, (qty, from, to)) = sequence::tuple((
         preceded(tag("move "), complete::u32),
         preceded(tag(" from "), complete::u32),
         preceded(tag(" to "), complete::u32),
     ))(input)?;
-    Ok((input, CraneOp { num, from, to }))
+    Ok((
+        input,
+        CraneOp {
+            qty,
+            from: from - 1,
+            to: to - 1,
+        },
+    ))
 }
 
 fn parse_full(input: &str) -> IResult<&str, (Vec<Vec<Option<&str>>>, Vec<CraneOp>)> {
@@ -65,12 +72,24 @@ fn transpose_rev<T>(v: Vec<Vec<Option<T>>>) -> Vec<Vec<T>> {
         .collect()
 }
 
-pub fn run_p1(input: &str) -> &str {
-    let (rest, (crates_horizontal, ops)) = parse_full(input).unwrap();
-    let crates_stacks = transpose_rev(crates_horizontal);
-    println!("{:#?}", crates_stacks);
-    println!("{:#?}", ops);
-    "XXX"
+pub fn run_p1(input: &str) -> String {
+    let (_, (crates_horizontal, ops)) = parse_full(input).unwrap();
+    let mut stacks = transpose_rev(crates_horizontal);
+    for CraneOp { qty, from, to } in ops {
+        for _ in 0..qty {
+            if let Some(popped) = stacks[from as usize].pop() {
+                stacks[to as usize].push(popped);
+            }
+        }
+    }
+    let result: String = stacks
+        .iter()
+        .map(|vec| match vec.iter().last() {
+            Some(c) => c,
+            None => "",
+        })
+        .collect();
+    result
 }
 pub fn run_p2(input: &str) -> usize {
     42
