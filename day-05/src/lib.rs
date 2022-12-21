@@ -91,8 +91,22 @@ pub fn run_p1(input: &str) -> String {
         .collect();
     result
 }
-pub fn run_p2(input: &str) -> usize {
-    42
+pub fn run_p2(input: &str) -> String {
+    let (_, (crates_horizontal, ops)) = parse_full(input).unwrap();
+    let mut stacks = transpose_rev(crates_horizontal);
+    for CraneOp { qty, from, to } in ops {
+        let idx_remove = stacks[from as usize].len() - qty as usize;
+        let popped: Vec<&str> = stacks[from as usize].drain(idx_remove..).collect();
+        stacks[to as usize].extend(popped);
+    }
+    let result: String = stacks
+        .iter()
+        .map(|vec| match vec.iter().last() {
+            Some(c) => c,
+            None => "",
+        })
+        .collect();
+    result
 }
 #[cfg(test)]
 mod tests {
@@ -118,6 +132,6 @@ move 1 from 1 to 2
     #[test]
     fn test_p2() {
         let result = run_p2(TEST_INPUT);
-        assert_eq!(result, 2);
+        assert_eq!(result, "MCD");
     }
 }
